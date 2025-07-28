@@ -10,3 +10,12 @@ export const getProducts = async () => {
   });
   return res.json();
 };
+
+export const getProductsById = async () => {
+  const res = await fetch(`${baseURL}/products`, {
+    headers: {
+      Authorization: `Basic ${auth}`,
+    },
+  });
+  return res.json();
+};

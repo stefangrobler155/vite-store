@@ -1,7 +1,9 @@
 export default function Footer() {
     return(
-        <footer>
-            <h2>Footer</h2>
-        </footer>
+    <footer className="footer bg-light py-3">
+        <div className="container text-center">
+        <p className="mb-0">&copy; 2025 My Store. All rights reserved.</p>
+        </div>
+    </footer>
     )   
 }
