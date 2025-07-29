@@ -11,6 +11,7 @@ import MyAccount from './pages/MyAccount';
 import Products from './pages/Products';
 import Auth from './pages/Auth';
 import SingleProduct from './pages/SingleProduct';
+import "./utils/api"
 
 export default function App() {
 
