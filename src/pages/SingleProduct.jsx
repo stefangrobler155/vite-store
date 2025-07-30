@@ -1,41 +1,65 @@
 import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
+import { getProductById } from "../utils/api";
+import { useEffect, useState } from "react";
 
 export default function SingleProduct () {
+    const { productId } = useParams(); // Get productId from URL
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { id } = useParams();
-    // console.log(params);
+
+useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const data = await getProductById(productId);
+        console.log("Product Data:", data);
+        setProduct(data);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError("Failed to load product. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [productId]);
+  
+    if (loading) return <div className="container">Loading...</div>;
+    if (error) return <div className="container text-danger">{error}</div>;
+    if (!product) return <div className="container">Product not found.</div>
     
-    const redirectSinglePage = () => navigate('/cart/100')
-    return (
-        <>
-            <div className="container my-5">
-                <div className="row">
-               
+        return (
+            <div className="container my-4">
+            <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
+                Back
+            </button>
+            <h1>{product.name}</h1>
+            <div className="row">
                 <div className="col-md-6">
-                    <div className="card">
-                    <img className="card-img-top" src="product-image.jpg" alt="Product Name" />
-                    </div>
+                <img
+                    src={product.images[0]?.src || "https://via.placeholder.com/300"}
+                    alt={product.name}
+                    className="img-fluid"
+                />
                 </div>
-                
                 <div className="col-md-6">
-                    <h1 className="my-4">Product Name {id}</h1>
-                    <div className="mb-4">
-                    <p>This is a detailed description of the product. It might include features, specifications, and other important information.</p>
-                    </div>
-                    <div className="mb-4">
-                    <h5>Price:</h5>
-                    $99.99
-                    </div>
-                    <div className="mb-4">
-                    <h5>Category: Category 1, Category 2</h5>
-                    </div>
-                    <button className="btn btn-primary mt-4" onClick={redirectSinglePage}>
-                    Add to Cart
-                    </button>
-                </div>
+                <p><strong>Price:</strong> R{product.price}</p>
+                <div
+                    dangerouslySetInnerHTML={{
+                    __html: product.description || product.short_description,
+                    }}
+                />
+                <p>
+                    <strong>Category:</strong>{" "}
+                    {product.categories?.map((cat) => cat.name).join(", ") || "N/A"}
+                </p>
+                <p><strong>Stock Status:</strong> {product.stock_status}</p>
+                <button className="btn btn-primary">Add to Cart</button>
                 </div>
             </div>
-        </>
-    )
-}
+            </div>
+        );
+        }

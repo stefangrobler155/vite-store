@@ -211,3 +211,14 @@ body {
   .navbar-toggler{
     background-color: whitesmoke !important;
   }
+  .regular-price{
+    margin-right: 1rem;
+    color: #616161;
+    font-weight: 500;
+    text-decoration-line: line-through;
+  }
+  .sale-price{
+    color: #0ba300;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }

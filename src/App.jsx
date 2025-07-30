@@ -27,7 +27,7 @@ export default function App() {
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/signup" element={<Auth />} />
-        <Route path='/product/:id' element={<SingleProduct />} />
+        <Route path='/product/:productId' element={<SingleProduct />} />
       </Routes>
     <Footer />
     </>
