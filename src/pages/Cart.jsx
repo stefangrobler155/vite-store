@@ -2,38 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
-  const [products, setProducts] = useState([])
+  const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem("cart")))
+
+
   const navigate = useNavigate();
   const redirectToCheckout = () => {
     navigate('/checkout');
   }
   useEffect(() => {
-    setProducts( [
-      
-    ])
-  },[])
-  
-  useEffect(() => {
-    setProducts([{
-      id: "1",
-      image: "/no-entry.jpg",
-      name: "Product 1",
-      price: 20,
-      quantity: 3,
-    },{
-      id: "2",
-      image: "/no-entry.jpg",
-      name: "Product 2",
-      price: 80,
-      quantity: 2,
-    },{
-      id: "3",
-      image: "/no-entry.jpg",
-      name: "Product 3",
-      price: 60,
-      quantity: 4,
-    }])
-  }, [])
+    console.log(cartItems);
+    
+  }, [cartItems])
+  const calcCartTotal = () => {
+    return cartItems.reduce( (total, item) => {
+      const price = item.price ? parseFloat(item.price) : 0
+      return total + (price * item.quantity)
+    }, 0).toFixed(2)
+  }
   return (
    <div className="container">
     <h1 className="my-4">Cart</h1>
@@ -50,13 +35,13 @@ export default function Cart() {
         </thead>
         <tbody>
           {
-            products.length > 0 && products.map((product) => {
+            cartItems.length > 0 && cartItems.map((cartItem) => {
               return (
-                <tr key={product.id}>
-                  <td><img src={product.image} alt="Product Name" style={{width: "50px"}} /></td>
-                  <td>{product.name}</td>
-                  <td>{product.price}</td>
-                  <td>{product.quantity}</td>
+                <tr key={cartItem.id}>
+                  <td><img src={cartItem?.images?.[0].src} alt={cartItem?.images?.[0].alt} style={{width: "50px"}} /></td>
+                  <td>{cartItem.name}</td>
+                  <td>R {(cartItem.quantity * cartItem.price).toFixed(2)} {cartItem.on_sale ? <span className="cart-regular-price"><br />R { (cartItem.regular_price * cartItem.quantity).toFixed(2) }</span> : null}</td>
+                  <td>{cartItem.quantity}</td>
                   <td>
                     
                     <button className="btn btn-danger">Remove</button>
@@ -73,7 +58,7 @@ export default function Cart() {
       </table>
       <div className="row align-items-center">
         <div className="col">
-          <h3>Total: $50.00</h3>
+          <h3>Total: R {calcCartTotal()}</h3>
         </div>
         <div className="col text-end">
           
@@ -84,7 +69,7 @@ export default function Cart() {
   
     
     <div id="empty-cart-message">
-      <p>Your cart is empty.</p>
+      {cartItems.length <= 0 && <p>Your cart is empty.</p>}
     </div>
   </div>
   

@@ -68,14 +68,15 @@ export const getProductById = async (productId) => {
     const url = `${API_URL}/products/${productId}`;
     const oauthParams = generateOAuthSignature(url, "GET", {}); // No query params needed for single product
 
-    console.log("Request URL:", url);
-    console.log("OAuth Params:", oauthParams);
+    // console.log("Request URL:", url);
+    // console.log("OAuth Params:", oauthParams);
 
     const response = await api.get(`/products/${productId}`, {
       params: oauthParams,
     });
 
-    console.log("API Response:", response);
+    // console.log("API Response:", response);
+    
     if (!response.data || typeof response.data !== "object" || !response.data.id) {
       throw new Error("Invalid product data returned from API");
     }

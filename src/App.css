@@ -181,6 +181,27 @@ body {
   justify-content: space-between;
 }
 
+.navbar-toggler{
+    background-color: whitesmoke !important;
+  }
+  .regular-price{
+    margin-right: 1rem;
+    color: #e10000;
+    font-weight: 500;
+    text-decoration-line: line-through;
+  }
+  .sale-price{
+    color: #0ba300;
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+.cart-regular-price{
+    font-size: .8rem;
+    color: #e00000;
+    font-weight: 500;
+    text-decoration-line: line-through;
+}
+/* Loader */
 .loader-overlay {
     position: fixed;
     top: 0;
@@ -206,19 +227,4 @@ body {
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-  }
-
-  .navbar-toggler{
-    background-color: whitesmoke !important;
-  }
-  .regular-price{
-    margin-right: 1rem;
-    color: #616161;
-    font-weight: 500;
-    text-decoration-line: line-through;
-  }
-  .sale-price{
-    color: #0ba300;
-    font-weight: 600;
-    font-size: 1.2rem;
   }

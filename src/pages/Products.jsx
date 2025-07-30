@@ -1,25 +1,40 @@
 import { useNavigate } from "react-router-dom";
 import { getAllProducts } from "../utils/api";
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
 
-export default function Products() {
-    const [products, setProducts] = useState([]);
+export default function Products({handleAddToCart}) {
+    const [products, setProducts] = useState([]);;
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         const fetchProducts = async () => {
-            const data = await getAllProducts();
-            setProducts(data)
-            console.log(data);
-            
-        }
+            try {
+                setLoading(true);
+                const data = await getAllProducts();
+                setProducts(data);
+            } catch (err) {
+                console.error("Error fetching product:", err);
+                setError("Failed to load product. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchProducts()
     },[]);
+
     const navigate = useNavigate()
     const singlePageRedirect = (productId) => navigate(`/product/${productId}`);
-    
+
+    if (loading) return <Loader />;
+    if (error) return <div className="container text-danger">{error}</div>;
+    if (!products) return <div className="container">Product not found.</div>
+
     return (
         <>
-            <div className="container">
-                <h1 className="my-4">Products</h1>
+            
+            <h1 className="my-4">Products</h1>
                 <div className="row">
                     
                     {products.length > 0 && products.map((product) => {
@@ -38,14 +53,15 @@ export default function Products() {
                                         {!product.on_sale ? <p className="card-text">R{product.regular_price}</p> : 
                                         <div className="card-text">
                                             <span className="regular-price">R{product.regular_price}</span>
-                                            <span className="sale-price">R{product.price}</span></div>}
+                                            <span className="sale-price">R{product.price}</span></div>
+                                        }
                                         <div
                                             dangerouslySetInnerHTML={{
                                                 __html: product.short_description || product.description,
                                             }}
                                         />
                                         <p className="card-text">Category: {product?.categories.map( (category) => category.name).join(", ")}</p>
-                                        <button className="btn btn-primary">
+                                        <button onClick={() => handleAddToCart(product)} className="btn btn-primary">
                                         Add to Cart
                                         </button>
                                     </div>
@@ -54,7 +70,7 @@ export default function Products() {
                         )
                     })} 
                 </div>
-            </div>
+            
         </>
     )
 }
