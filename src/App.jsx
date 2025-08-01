@@ -33,8 +33,14 @@ export default function App() {
     localStorage.setItem("cart", JSON.stringify(cart))
     
     toast.success("Item Added To Cart")
-    console.log(product);
-    
+  }
+  const removeCartItem = (product) => {
+    if (window.confirm("You are about to remove this item form your cart!")) {
+      const updatedCart = cart.filter((item) => item.id !== product.id)
+      setCart(updatedCart)
+      localStorage.setItem("cart", JSON.stringify(updatedCart))
+    }
+    toast.success("Product removed from Cart!")
   }
   return (
     <>
@@ -44,7 +50,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products handleAddToCart={addToCart}  />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<Cart handelRemoveItem={ removeCartItem } cart={cart} />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/my-account" element={<MyAccount />} />
         <Route path="/my-orders" element={<MyOrders />} />

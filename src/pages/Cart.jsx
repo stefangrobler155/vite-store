@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Cart() {
-  const [cartItems, setCartItems] = useState(JSON.parse(localStorage.getItem("cart")))
+export default function Cart({ handelRemoveItem, cart }) {
+  const [cartItems, setCartItems] = useState(cart)
 
 
   const navigate = useNavigate();
@@ -10,15 +10,16 @@ export default function Cart() {
     navigate('/checkout');
   }
   useEffect(() => {
-    console.log(cartItems);
-    
-  }, [cartItems])
+    setCartItems(cart)    
+  }, [cart])
+
   const calcCartTotal = () => {
     return cartItems.reduce( (total, item) => {
       const price = item.price ? parseFloat(item.price) : 0
       return total + (price * item.quantity)
     }, 0).toFixed(2)
   }
+
   return (
    <div className="container">
     <h1 className="my-4">Cart</h1>
@@ -44,7 +45,7 @@ export default function Cart() {
                   <td>{cartItem.quantity}</td>
                   <td>
                     
-                    <button className="btn btn-danger">Remove</button>
+                    <button className="btn btn-danger" onClick={() => handelRemoveItem(cartItem)}>Remove</button>
                   </td>
                 </tr>
               )
