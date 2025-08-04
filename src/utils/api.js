@@ -91,3 +91,82 @@ export const getProductById = async (productId) => {
     throw new Error("Failed to fetch product: " + (error.response?.data?.message || error.message));
   }
 };
+
+export const registerUser = async (userInfo) => {
+  try {
+    const consumerKey = import.meta.env.VITE_CONSUMER_KEY;
+    const consumerSecret = import.meta.env.VITE_CONSUMER_SECRET;
+    const base64Credentials = btoa(`${consumerKey}:${consumerSecret}`);
+
+    const response = await axios.post(
+      import.meta.env.VITE_USER_URL, // Use VITE_USER_URL
+      {
+        email: userInfo.email,
+        username: userInfo.userName,
+        password: userInfo.password,
+        first_name: userInfo.name.split(' ')[0] || userInfo.name,
+        last_name: userInfo.name.split(' ')[1] || '',
+      },
+      {
+        headers: {
+          Authorization: `Basic ${base64Credentials}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error registering user:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw error;
+  }
+};
+
+export const loginUser = async (username, password) => {
+  try {
+    const response = await axios.post(
+      'https://test.sfgweb.co.za/wp-json/jwt-auth/v1/token', // JWT endpoint (keep as is unless moved to .env)
+      {
+        username,
+        password,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    localStorage.setItem('jwt', response.data.token);
+    return response.data.token;
+  } catch (error) {
+    console.error('Error logging in:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw error;
+  }
+};
+
+export const logoutUser = () => {
+  try {
+    localStorage.removeItem('jwt');
+    return { success: true, message: 'Logged out successfully' };
+  } catch (error) {
+    console.error('Error logging out:', error);
+    throw error;
+  }
+};
+
+export const processTestPayment = async (orderId) => {
+  try {
+    const response = { success: true, message: 'Test payment processed successfully' };
+    return response;
+  } catch (error) {
+    console.error('Error processing test payment:', error);
+    throw error;
+  }
+};

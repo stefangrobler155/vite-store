@@ -1,48 +1,62 @@
-import { Link } from "react-router-dom";
+// src/components/NavBar.jsx
+import { Link } from 'react-router-dom';
 
+export default function NavBar({ cartItem, handleLogout }) {
+  const isLoggedIn = !!localStorage.getItem('jwt');
 
-export default function NavBar({ cartItem }) {
   return (
-    <>
-      <nav className="navbar navbar-expand-lg navbar-light bg-dark">
-        <div className="container">
-          <Link className="navbar-brand" to="/">My Store</Link>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav">
+    <nav className="navbar navbar-expand-lg navbar-light bg-dark">
+      <div className="container">
+        <Link className="navbar-brand" to="/">My Shop</Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav ms-auto">
+            <li className="nav-item">
+              <Link className="nav-link" to="/">Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/products">Products</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/cart">
+                Cart ({cartItem.length})
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/my-orders">My Orders</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/my-account">My Account</Link>
+            </li>
+            {isLoggedIn ? (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/dashboard">Dashboard</Link>
+                </li>
+                <li className="nav-item">
+                  <button className="nav-link btn btn-link" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
               <li className="nav-item">
-                <Link to="/" className="nav-link">Home</Link>
+                <Link className="nav-link" to="/auth">Login/Signup</Link>
               </li>
-              <li className="nav-item">
-                <Link to="/products" className="nav-link">Products</Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/cart" className="nav-link">
-                  Cart
-                  <span className="badge pill bg-secondary">{ cartItem.length }</span> 
-                </Link>
-              </li>
-            
-              <li className="nav-item">
-                <Link to="/my-account" className="nav-link">My Account</Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/my-orders" className="nav-link">My Orders</Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/" className="nav-link" onClick={() => { console.log('Hello');
-                }} >Logout</Link> 
-              </li>
-
-              <li className="nav-item">
-                <Link to="/login" className="nav-link">Login/Signup</Link>
-              </li>
-            </ul>
-          </div>
+            )}
+          </ul>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }

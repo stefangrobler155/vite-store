@@ -228,3 +228,24 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+  /* Ensure navbar links are tappable on mobile */
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+}
+
+/* Reduce font size on small screens */
+@media (max-width: 576px) {
+  .navbar-nav .nav-link {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
+  .table-responsive {
+    overflow-x: auto;
+  }
+}

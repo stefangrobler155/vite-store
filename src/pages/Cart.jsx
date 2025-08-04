@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Cart({ handelRemoveItem, cart }) {
+export default function Cart({ handleRemoveItem, cart }) {
   const [cartItems, setCartItems] = useState(cart)
 
 
@@ -45,7 +45,7 @@ export default function Cart({ handelRemoveItem, cart }) {
                   <td>{cartItem.quantity}</td>
                   <td>
                     
-                    <button className="btn btn-danger" onClick={() => handelRemoveItem(cartItem)}>Remove</button>
+                    <button className="btn btn-danger" onClick={() => handleRemoveItem(cartItem)}>Remove</button>
                   </td>
                 </tr>
               )
