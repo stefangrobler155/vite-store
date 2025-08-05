@@ -1,12 +1,12 @@
 // utils/api.js
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import { jwtDecode } from 'jwt-decode'
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CONSUMER_KEY = import.meta.env.VITE_CONSUMER_KEY;
 const CONSUMER_SECRET = import.meta.env.VITE_CONSUMER_SECRET;
 
-// Rest of your code remains the same
 const generateOAuthSignature = (url, method = "GET", params = {}) => {
   const nonce = Math.random().toString(36).substring(2);
   const timestamp = Math.floor(Date.now() / 1000);
@@ -92,35 +92,29 @@ export const getProductById = async (productId) => {
   }
 };
 
+
+
 export const registerUser = async (userInfo) => {
   try {
-    const consumerKey = import.meta.env.VITE_CONSUMER_KEY;
-    const consumerSecret = import.meta.env.VITE_CONSUMER_SECRET;
-    const base64Credentials = btoa(`${consumerKey}:${consumerSecret}`);
-
     const response = await axios.post(
-      import.meta.env.VITE_USER_URL, // Use VITE_USER_URL
+      `${import.meta.env.VITE_API_URL}/customers`,
       {
         email: userInfo.email,
         username: userInfo.userName,
         password: userInfo.password,
-        first_name: userInfo.name.split(' ')[0] || userInfo.name,
-        last_name: userInfo.name.split(' ')[1] || '',
+        first_name: userInfo.name,
       },
       {
         headers: {
-          Authorization: `Basic ${base64Credentials}`,
+          Authorization: `Basic ${btoa(
+            `${import.meta.env.VITE_CONSUMER_KEY}:${import.meta.env.VITE_CONSUMER_SECRET}`
+          )}`,
           'Content-Type': 'application/json',
         },
       }
     );
     return response.data;
   } catch (error) {
-    console.error('Error registering user:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-    });
     throw error;
   }
 };
@@ -128,19 +122,68 @@ export const registerUser = async (userInfo) => {
 export const loginUser = async (username, password) => {
   try {
     const response = await axios.post(
-      'https://test.sfgweb.co.za/wp-json/jwt-auth/v1/token', // JWT endpoint (keep as is unless moved to .env)
-      {
-        username,
-        password,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      import.meta.env.VITE_JWT_URL,
+      { username, password },
+      { headers: { 'Content-Type': 'application/json' } }
     );
-    localStorage.setItem('jwt', response.data.token);
-    return response.data.token;
+    // Log response details for debugging
+    console.log('Full JWT response (raw):', response);
+    console.log('Response.data type:', typeof response.data);
+    console.log('Response.data keys:', Object.keys(response.data));
+    console.log('Full JWT response (stringified):', JSON.stringify(response.data, null, 2));
+
+    // Extract token
+    const token = response.data.token;
+    if (!token) {
+      console.warn('No token found in response:', JSON.stringify(response.data, null, 2));
+      throw new Error('No token received. Please check JWT plugin configuration.');
+    }
+
+    // Decode JWT token
+    let userId;
+    try {
+      const decoded = jwtDecode(token);
+      console.log('Decoded JWT payload:', JSON.stringify(decoded, null, 2));
+      userId = decoded.data?.user?.id;
+      if (!userId) {
+        console.warn('User ID not found in decoded JWT. Decoded structure:', JSON.stringify(decoded, null, 2));
+        throw new Error('User ID not found in JWT payload.');
+      }
+      console.log('Extracted user_id from decoded JWT:', userId);
+    } catch (decodeError) {
+      console.error('JWT decoding failed:', {
+        message: decodeError.message,
+        stack: decodeError.stack,
+      });
+      throw new Error('Failed to decode JWT token.');
+    }
+
+    // Fallback to response.data.data if needed
+    if (!userId && response.data.data?.user?.id) {
+      userId = response.data.data.user.id;
+      console.log('Extracted user_id from response.data.data.user.id:', userId);
+    }
+
+    // Try parsing response.data.data as JSON if it's a string
+    if (!userId && typeof response.data.data === 'string') {
+      try {
+        const parsedData = JSON.parse(response.data.data);
+        userId = parsedData.user?.id;
+        console.log('Extracted user_id from parsed response.data.data:', userId);
+      } catch (parseError) {
+        console.warn('Failed to parse response.data.data:', parseError);
+      }
+    }
+
+    if (!userId) {
+      console.warn('User ID extraction failed. Response structure:', JSON.stringify(response.data, null, 2));
+      throw new Error('User ID not found in response or JWT payload. Please check JWT plugin configuration.');
+    }
+
+    return {
+      token,
+      user_id: userId.toString(), // Ensure string for localStorage
+    };
   } catch (error) {
     console.error('Error logging in:', {
       status: error.response?.status,
@@ -152,21 +195,31 @@ export const loginUser = async (username, password) => {
 };
 
 export const logoutUser = () => {
-  try {
-    localStorage.removeItem('jwt');
-    return { success: true, message: 'Logged out successfully' };
-  } catch (error) {
-    console.error('Error logging out:', error);
-    throw error;
-  }
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('user_id');
 };
 
-export const processTestPayment = async (orderId) => {
+export const getUserEmail = async (userId) => {
   try {
-    const response = { success: true, message: 'Test payment processed successfully' };
-    return response;
+    const consumerKey = import.meta.env.VITE_CONSUMER_KEY;
+    const consumerSecret = import.meta.env.VITE_CONSUMER_SECRET;
+    const base64Credentials = btoa(`${consumerKey}:${consumerSecret}`);
+
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/customers/${userId}`,
+      {
+        headers: {
+          Authorization: `Basic ${base64Credentials}`,
+        },
+      }
+    );
+    return response.data.email;
   } catch (error) {
-    console.error('Error processing test payment:', error);
+    console.error('Error fetching user email:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
     throw error;
   }
 };

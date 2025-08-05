@@ -1,3 +1,4 @@
+// src/pages/Auth.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser, loginUser, logoutUser } from '../utils/api';
@@ -20,13 +21,15 @@ export default function Auth() {
 
   useEffect(() => {
     const token = localStorage.getItem('jwt');
-    setIsLoggedIn(!!token);
+    const userId = localStorage.getItem('user_id');
+    console.log('Auth useEffect - token:', token, 'user_id:', userId);
+    setIsLoggedIn(!!token && !!userId);
   }, []);
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
-    setLoginData((prevLoginData) => ({
-      ...prevLoginData,
+    setLoginData((prevData) => ({
+      ...prevData,
       [name]: value,
     }));
   };
@@ -38,8 +41,12 @@ export default function Auth() {
       return;
     }
     try {
-      const token = await loginUser(logInData.loginUsername, logInData.loginPassword);
-      localStorage.setItem('jwt', token);
+      console.log('Attempting login with:', { username: logInData.loginUsername });
+      const response = await loginUser(logInData.loginUsername, logInData.loginPassword);
+      localStorage.setItem('jwt', response.token);
+      localStorage.setItem('user_id', response.user_id);
+      console.log('Stored user_id:', response.user_id);
+      console.log('LocalStorage after login:', { jwt: localStorage.getItem('jwt'), user_id: localStorage.getItem('user_id') });
       setLoginData({
         loginUsername: '',
         loginPassword: '',
@@ -48,6 +55,11 @@ export default function Auth() {
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error) {
+      console.error('Login failed:', {
+        message: error.message,
+        data: error.response?.data,
+        status: error.response?.status,
+      });
       toast.error('Login failed: ' + (error.response?.data?.message || error.message));
     }
   };
@@ -97,109 +109,105 @@ export default function Auth() {
   };
 
   return (
-    <>
-      <div className="container">
-        <h1 className="my-4 text-center">Login / Signup</h1>
-        <div className="row">
-          {!isLoggedIn ? (
-            <>
-              {/* Login */}
-              <div className="col-md-6">
-                <h2>Login</h2>
-                <form onSubmit={loginSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="loginUsername" className="form-label">Username</label>
-                    <input
-                      type="text"
-                      id="loginUsername"
-                      name="loginUsername"
-                      value={logInData.loginUsername}
-                      className="form-control"
-                      placeholder="Enter username"
-                      onChange={handleLoginChange}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="loginPassword" className="form-label">Password</label>
-                    <input
-                      type="password"
-                      id="loginPassword"
-                      name="loginPassword"
-                      value={logInData.loginPassword}
-                      className="form-control"
-                      placeholder="Enter password"
-                      onChange={handleLoginChange}
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary mt-3">Login</button>
-                </form>
-              </div>
-              {/* Signup */}
-              <div className="col-md-6">
-                <h2>Signup</h2>
-                <form onSubmit={signupSubmit}>
-                  <div className="mb-3">
-                    <label htmlFor="signupName" className="form-label">Name</label>
-                    <input
-                      type="text"
-                      id="signupName"
-                      name="signupName"
-                      value={signUpData.signupName}
-                      className="form-control"
-                      placeholder="Enter name"
-                      onChange={handleChangeSignup}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="signupEmail" className="form-label">Email</label>
-                    <input
-                      type="email"
-                      id="signupEmail"
-                      name="signupEmail"
-                      value={signUpData.signupEmail}
-                      className="form-control"
-                      placeholder="Enter email"
-                      onChange={handleChangeSignup}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="signupUsername" className="form-label">Username</label>
-                    <input
-                      type="text"
-                      id="signupUsername"
-                      name="signupUsername"
-                      value={signUpData.signupUsername}
-                      className="form-control"
-                      placeholder="Enter username"
-                      onChange={handleChangeSignup}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="signupPassword" className="form-label">Password</label>
-                    <input
-                      type="password"
-                      id="signupPassword"
-                      name="signupPassword"
-                      value={signUpData.signupPassword}
-                      className="form-control"
-                      placeholder="Enter password"
-                      onChange={handleChangeSignup}
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-success mt-3">Signup</button>
-                </form>
-              </div>
-            </>
-          ) : (
-            <div className="col-12 text-center">
-              <h2>Welcome, User!</h2>
-              <button className="btn btn-danger mt-3" onClick={handleLogout}>
-                Logout
-              </button>
+    <div className="container">
+      <h1 className="my-4 text-center">Login / Signup</h1>
+      <div className="row">
+        {!isLoggedIn ? (
+          <>
+            <div className="col-md-6">
+              <h2>Login</h2>
+              <form onSubmit={loginSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="loginUsername" className="form-label">Username</label>
+                  <input
+                    type="text"
+                    id="loginUsername"
+                    name="loginUsername"
+                    value={logInData.loginUsername}
+                    className="form-control"
+                    placeholder="Enter username (e.g., sexykay)"
+                    onChange={handleLoginChange}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="loginPassword" className="form-label">Password</label>
+                  <input
+                    type="password"
+                    id="loginPassword"
+                    name="loginPassword"
+                    value={logInData.loginPassword}
+                    className="form-control"
+                    placeholder="Enter password"
+                    onChange={handleLoginChange}
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary mt-3">Login</button>
+              </form>
             </div>
-          )}
-        </div>
+            <div className="col-md-6">
+              <h2>Signup</h2>
+              <form onSubmit={signupSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="signupName" className="form-label">Name</label>
+                  <input
+                    type="text"
+                    id="signupName"
+                    name="signupName"
+                    value={signUpData.signupName}
+                    className="form-control"
+                    placeholder="Enter name"
+                    onChange={handleChangeSignup}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="signupEmail" className="form-label">Email</label>
+                  <input
+                    type="email"
+                    id="signupEmail"
+                    name="signupEmail"
+                    value={signUpData.signupEmail}
+                    className="form-control"
+                    placeholder="Enter email"
+                    onChange={handleChangeSignup}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="signupUsername" className="form-label">Username</label>
+                  <input
+                    type="text"
+                    id="signupUsername"
+                    name="signupUsername"
+                    value={signUpData.signupUsername}
+                    className="form-control"
+                    placeholder="Enter username"
+                    onChange={handleChangeSignup}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="signupPassword" className="form-label">Password</label>
+                  <input
+                    type="password"
+                    id="signupPassword"
+                    name="signupPassword"
+                    value={signUpData.signupPassword}
+                    className="form-control"
+                    placeholder="Enter password"
+                    onChange={handleChangeSignup}
+                  />
+                </div>
+                <button type="submit" className="btn btn-success mt-3">Signup</button>
+              </form>
+            </div>
+          </>
+        ) : (
+          <div className="col-12 text-center">
+            <h2>Welcome, {signUpData.signupName || 'User'}!</h2>
+            <button className="btn btn-danger mt-3" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }

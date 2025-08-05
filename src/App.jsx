@@ -1,11 +1,10 @@
-// src/App.jsx
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import Downloads from './pages/Downloads'; // Add import
+import Downloads from './pages/Downloads';
 import Footer from './components/Footer';
 import NavBar from './components/NavBar';
 import MyOrders from './pages/MyOrders';
@@ -17,6 +16,7 @@ import Dashboard from './pages/Dashboard';
 import { ToastContainer, toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { logoutUser } from './utils/api';
+import OrderConfirmation from './pages/OrderConfirmation';
 
 export default function App() {
   const [cart, setCart] = useState(() => {
@@ -84,6 +84,15 @@ export default function App() {
           <Route path="/checkout" element={<Checkout handleRemoveItem={removeCartItem} cart={cart} />} />
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/my-orders" element={<MyOrders />} />
+          <Route
+            path="/downloads/:orderId"
+            element={
+              <ProtectedRoute>
+                <Downloads />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/product/:productId" element={<SingleProduct handleAddToCart={addToCart} />} />
           <Route
@@ -91,14 +100,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/downloads/:orderId"
-            element={
-              <ProtectedRoute>
-                <Downloads />
               </ProtectedRoute>
             }
           />

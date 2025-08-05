@@ -7,30 +7,34 @@ import { toast } from 'react-toastify';
 export default function Downloads() {
   const { orderId } = useParams();
   const [downloads, setDownloads] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDownloads = async () => {
       try {
         const token = localStorage.getItem('jwt');
-        if (!token) {
+        const userId = localStorage.getItem('user_id');
+        console.log('Fetching downloads for order:', orderId, 'User ID:', userId);
+        if (!token || !userId) {
           toast.error('Please log in to view downloads');
           navigate('/auth');
           return;
         }
 
-        const consumerKey = import.meta.env.VITE_CONSUMER_KEY;
-        const consumerSecret = import.meta.env.VITE_CONSUMER_SECRET;
-        const base64Credentials = btoa(`${consumerKey}:${consumerSecret}`);
-
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
           {
             headers: {
-              Authorization: `Basic ${base64Credentials}`,
+              Authorization: `Basic ${btoa(
+                `${import.meta.env.VITE_CONSUMER_KEY}:${import.meta.env.VITE_CONSUMER_SECRET}`
+              )}`,
             },
           }
         );
+        console.log('Downloads response:', JSON.stringify(response.data, null, 2));
+        console.log('Downloads field:', response.data.downloads || 'No downloads field');
+        console.log('Order customer_id:', response.data.customer_id);
 
         setDownloads(response.data.downloads || []);
       } catch (error) {
@@ -41,6 +45,8 @@ export default function Downloads() {
         });
         toast.error('Failed to load downloads: ' + (error.response?.data?.message || error.message));
         navigate('/my-orders');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -49,8 +55,10 @@ export default function Downloads() {
 
   return (
     <div className="container my-4">
-      <h2>Your Downloads</h2>
-      {downloads.length === 0 ? (
+      <h2>Your Downloads for Order #{orderId}</h2>
+      {isLoading ? (
+        <p>Loading downloads...</p>
+      ) : downloads.length === 0 ? (
         <p>No downloadable files found for this order.</p>
       ) : (
         <ul className="list-group">
